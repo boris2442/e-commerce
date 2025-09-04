@@ -8,11 +8,13 @@ export default {
   components: {
     Navigation,
   },
-  data: () => {
+  // data: () => {
+  data() {
     return {
       products: products,
       searchKey: "",
       liked: [],
+      cart: [],
     };
   },
   computed: {
@@ -21,12 +23,12 @@ export default {
         product.description.toLowerCase().includes(this.searchKey.toLowerCase())
       );
     },
-    getLikeCookie() {
-      let cookieValue = JSON.parse($cookies.get("like"));
-      cookieValue==null ? this.liked=[] : this.liked=cookieValue
-    },
   },
   methods: {
+    getLikeCookie() {
+      let cookieValue = JSON.parse($cookies.get("like"));
+      cookieValue == null ? (this.liked = []) : (this.liked = cookieValue);
+    },
     setLikeCookie() {
       document.addEventListener("input", () => {
         setTimeout(() => {
@@ -34,10 +36,22 @@ export default {
         }, 300);
       });
     },
+    addToCart(product) {
+      this.cart.push({
+        id: product.id,
+        img: product.img,
+        description: product.description,
+        price: product.price,
+        quantity: 1,
+      });
+    },
   },
-  mounted:()=>{
-    this.getLikeCookie;
-  }
+  // mounted: () => {
+  //   this.getLikeCookie();
+  // },
+  mounted() {
+    this.getLikeCookie();
+  },
 };
 
 const products = [
@@ -142,7 +156,7 @@ const products = [
       <div class="card-container">
         <div v-for="product in filteredList" class="card" :key="product.id">
           <div class="img-container">
-            <img :src="product.img" alt="{{ product.description }}" />
+            <img :src="product.img" :alt="product.description" />
           </div>
           <div class="card-text">
             <h3>{{ product.description }}</h3>
@@ -163,16 +177,31 @@ const products = [
               </label>
             </div>
             <div class="add-to-cart">
-              <button>
+              <button @click="addToCart(product)">
                 <i class="fas fa-shopping-cart"></i>
               </button>
             </div>
           </div>
         </div>
         <!-- no products found -->
-        <div v-if="filteredList.length == []" class="no-products">
+        <div v-if="filteredList.length === 0" class="no-products">
           <h3>Desole</h3>
           <p>Aucun produit trouvé</p>
+        </div>
+      </div>
+      <!-- cart display -->
+      <div v-if="cart.length > 0" class="shopping-cart" id="shopping-cart">
+        <h2>Panier</h2>
+        <div class="item-group">
+          <div v-for="product in cart" class="item" :key="product.id">
+            <div class="img-container">
+              <img v-bind:src="product.img" :alt="product.description" />
+            </div>
+            <div class="item-description">
+              <h4>{{ product.description }}</h4>
+              <p>{{ product.price }} €</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
