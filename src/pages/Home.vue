@@ -1,4 +1,5 @@
 <script scoped>
+import $cookies from "vue-cookies";
 // import { ref } from "vue";
 import Navigation from "../components/Navigation.vue";
 
@@ -10,8 +11,33 @@ export default {
   data: () => {
     return {
       products: products,
+      searchKey: "",
+      liked: [],
     };
   },
+  computed: {
+    filteredList() {
+      return this.products.filter((product) =>
+        product.description.toLowerCase().includes(this.searchKey.toLowerCase())
+      );
+    },
+    getLikeCookie() {
+      let cookieValue = JSON.parse($cookies.get("like"));
+      cookieValue==null ? this.liked=[] : this.liked=cookieValue
+    },
+  },
+  methods: {
+    setLikeCookie() {
+      document.addEventListener("input", () => {
+        setTimeout(() => {
+          $cookies.set("like", JSON.stringify(this.liked), "1d");
+        }, 300);
+      });
+    },
+  },
+  mounted:()=>{
+    this.getLikeCookie;
+  }
 };
 
 const products = [
@@ -95,12 +121,28 @@ const products = [
     <h1>Articles</h1>
     <!-- search display -->
 
+    <!-- <div class="search-container"> -->
+    <input
+      type="search"
+      v-model="searchKey"
+      placeholder="Rechercher..."
+      autocomplete="off"
+      id="search"
+    />
+    <span v-if="searchKey && filteredList.length >= 1">
+      {{ filteredList.length }} résultat pour "{{ searchKey }}"
+    </span>
+    <span v-else-if="searchKey && filteredList.length === 0">
+      Aucun résultat pour "{{ searchKey }}"
+    </span>
+    <!-- <i class="fas fa-search"></i> -->
+    <!-- </div> -->
     <!-- card-display -->
     <div class="card-cart-container">
       <div class="card-container">
-        <div v-for="product in products" class="card" :key="product.id">
+        <div v-for="product in filteredList" class="card" :key="product.id">
           <div class="img-container">
-            <img :src="product.img" alt="" />
+            <img :src="product.img" alt="{{ product.description }}" />
           </div>
           <div class="card-text">
             <h3>{{ product.description }}</h3>
@@ -111,8 +153,10 @@ const products = [
               <input
                 type="checkbox"
                 name="checkbox"
-                value="like"
+                :value="product.id"
                 v-bind:id="product.id"
+                v-model="liked"
+                @click="setLikeCookie()"
               />
               <label v-bind:for="product.id">
                 <i class="fas fa-heart"></i>
@@ -124,6 +168,11 @@ const products = [
               </button>
             </div>
           </div>
+        </div>
+        <!-- no products found -->
+        <div v-if="filteredList.length == []" class="no-products">
+          <h3>Desole</h3>
+          <p>Aucun produit trouvé</p>
         </div>
       </div>
     </div>

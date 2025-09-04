@@ -16,10 +16,10 @@ const routes = [
     path: "/shopping-cart",
     component: ShoppingCart,
   },
-    {
-        path: "/",
-        component: Home,
-    },
+  {
+    path: "/",
+    component: Home,
+  },
 ];
 const router = createRouter({
   history: createWebHistory(),
